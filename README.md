@@ -1,7 +1,7 @@
 # RecipeRefactorer
 Recipe Ingredient substitutions using LLMs, databases and logic programming (LP) to create suitable safe alternatives against Obesity/Nutrition/Dietary Restrictions/Health Conditions
 
-Dirac Tien, 112883698								           3/17/25
+Dirac Tien								           3/17/25
 Problem
 Problem: Recipe Ingredient substitutions using LLMs, databases and LP to create suitable safe alternatives against Obesity/Nutrition/Dietary Restrictions/Health Conditions
 Input:
