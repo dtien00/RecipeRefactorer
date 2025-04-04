@@ -103,6 +103,7 @@ Another feature the system could have is for the option to declare one of the al
 It is currently still in consideration that when creating the grounds and predicates for the logic program to utilize, should the ontology data be used to declare suitable substitutes to be refactored before calling the logic program, or should the logic program itself be linked to a data file that contains predicates and grounds corresponding to relations between the foodstuffs already obtained from FoodKG’s queries to Foodon. 
 
 The first option would require more work to be done in the driver program, and would reduce the work that would need to be done by the logic program. The second option will require less work on the driver program in contrast, but to reference a data file that contains predicates pertaining to all possible foodstuffs would be potentially more storage intensive, as it would also contain redundant ingredients that would not ever be considered as substitutes.
+
 References
 *1 Shirai, S. S., Seneviratne, O., Gordon, M. E., Chen, C., & McGuinness, D. L. (2021). Identifying ingredient substitutions using a knowledge graph of food. Frontiers in Artificial Intelligence, 3. https://doi.org/10.3389/frai.2020.621766
 
