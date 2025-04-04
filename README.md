@@ -1,9 +1,6 @@
 # RecipeRefactorer
 Recipe Ingredient substitutions using LLMs, databases and logic programming (LP) to create suitable safe alternatives against Obesity/Nutrition/Dietary Restrictions/Health Conditions
 
-Dirac Tien								           3/17/25
-Problem
-Problem: Recipe Ingredient substitutions using LLMs, databases and LP to create suitable safe alternatives against Obesity/Nutrition/Dietary Restrictions/Health Conditions
 Input:
 - URL/URI to refer to a particular recipe, or some general name for a dish
 - List of constraints: Health conditions (Hypertension/Allergens/Diabetes), Unavailable/Disliked ingredients, a numerical factor to scale recipe amount made, and optional medical information (age, weight, height)
