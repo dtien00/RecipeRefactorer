@@ -105,6 +105,7 @@ It is currently still in consideration that when creating the grounds and predic
 The first option would require more work to be done in the driver program, and would reduce the work that would need to be done by the logic program. The second option will require less work on the driver program in contrast, but to reference a data file that contains predicates pertaining to all possible foodstuffs would be potentially more storage intensive, as it would also contain redundant ingredients that would not ever be considered as substitutes.
 
 References
+
 *1 Shirai, S. S., Seneviratne, O., Gordon, M. E., Chen, C., & McGuinness, D. L. (2021). Identifying ingredient substitutions using a knowledge graph of food. Frontiers in Artificial Intelligence, 3. https://doi.org/10.3389/frai.2020.621766
 
 *2 Rita, L., Southern, J., Laponogov, I., Higgins, K., & Veselkov, K. (2024). Optimizing ingredient substitution using large language models to enhance phytochemical content in recipes. Machine Learning and Knowledge Extraction, 6(4), 2738–2752. https://doi.org/10.3390/make6040131
