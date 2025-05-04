@@ -1,0 +1,5 @@
+.credentials/
+./output/*
+./*/__pycache__/
+./data/*
+./git-filter-repo/*

@@ -1,0 +1,28 @@
+Tenderlicious chocolate cake Ingredients:
+-----------------------------
+eggs 3.0 
+grams granulated sugar 150.0 
+grams flour 60.0 
+milk 3.0 tbsp
+grams bittersweet chocolate 200.0 
+grams unsalted butter 100.0 
+pinch salt 1.0 
+powdered sugar 1.0 
+
+Nutritional Values:
+-----------------------------
+Calories: 2198.0
+Protein: 35.629999999999995
+TotalFat: 95.79
+Carbohydrate: 308.83
+Sodium: 402.0
+SaturatedFat: 55.788000000000004
+Cholesterol: 507.0
+Sugar: nan
+Calcium: 435.0
+Iron: 5.1899999999999995
+Potassium: 1080.0
+VitaminC: 11.100000000000001
+VitaminE: nan
+VitaminD: nan
+

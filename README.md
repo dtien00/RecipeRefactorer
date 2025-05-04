@@ -1,3 +1,22 @@
+# Setup
+Additional testing will need to be done for set up. Currently, set up dependencies using
+
+`pip install -r requirements.txt`
+
+Before running the program with
+
+`python main.py`
+
+If full_dataset.csv or USDA.csv are not within the download, as a result of git having file size limitations for commits, please uncomment the following two lines:
+
+	- # od.download("https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database")
+    - # od.download("https://www.kaggle.com/datasets/uciml/recipe-ingredients-dataset")
+	- # exit(0)
+
+Kaggle API credentials will be required, which you can generate your own at: `https://github.com/Kaggle/kaggle-api/blob/main/docs/README.md`
+
+After downloading the datasets, you can recomment the three lines of code mentioned above and move the two resulting datafiles to a folder called 'data' within the root directory of this project.
+
 # RecipeRefactorer
 Recipe Ingredient substitutions using LLMs, databases and logic programming (LP) to create suitable safe alternatives against Obesity/Nutrition/Dietary Restrictions/Health Conditions
 

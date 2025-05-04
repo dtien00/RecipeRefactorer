@@ -1,0 +1,30 @@
+Scookies Ingredients:
+-----------------------------
+flaxseed meal 1.0 tablespoon
+boiling water 2.0 tablespoons
+grams all-purpose gluten free flour mixture 230.0 
+grams almond meal 50.0 
+sugar 0.3333333333333333 cup
+baking powder 2.0 teaspoons
+baking soda 1.0 teaspoon
+butter, cold and diced 0.5 cup
+ounces plain sheep milk yogurt 6.0 
+large eggs 2.0 
+
+Nutritional Values:
+-----------------------------
+Calories: 4016.0
+Protein: 115.68
+TotalFat: 282.74
+Carbohydrate: 263.16
+Sodium: 2553.0
+SaturatedFat: 51.291000000000004
+Cholesterol: 943.0
+Sugar: nan
+Calcium: 872.0
+Iron: 16.560000000000002
+Potassium: 2188.0
+VitaminC: nan
+VitaminE: nan
+VitaminD: nan
+
