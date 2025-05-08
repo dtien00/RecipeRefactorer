@@ -407,7 +407,7 @@ if __name__ == '__main__':
             
     # Construct query based on recipe and constraint input to the programming language #
     print("result: ", recipe, specified_constraints)
-    query = Query(recipe, specified_constraints)
+    #query = Query(recipe, specified_constraints)
 
     example = cR()
     example.add_ingredient(("milk", "cup", 1))
