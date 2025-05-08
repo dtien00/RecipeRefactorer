@@ -1,7 +1,0 @@
-rapidfuzz
-pandas
-numpy
-easygui
-opendatasets
-llm
-clingo
