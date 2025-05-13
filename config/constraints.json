@@ -1,0 +1,32 @@
+{
+    "constraints": [
+        {
+            "name": "Diabetes",
+            "variants": [
+                "Type 1",
+                "Type 2"
+            ]
+        },
+        {
+            "name": "Allergen",
+            "variants": [
+                "Tree Nuts",
+                "Soy",
+                "Eggs",
+                "Shellfish",
+                "Wheat",
+                "Sesame",
+                "Milk"
+            ]
+        },
+        {
+            "name": "Hypertension"
+        },
+        {
+            "name": "Obesity"
+        },
+        {
+            "name": "Lactose Intolerant"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+Sunrabbit'S Vegan Powdered Cheese Ingredients:
+-----------------------------
+raw cashews 1.0 cup
+nutritional yeast 2.0 tablespoons
+salt 1.0 teaspoon
+onion powder 0.5 teaspoon
+garlic powder 1.0 teaspoon
+
+Nutritional Values:
+-----------------------------
+Calories: 1242.0
+Protein: 122.02
+TotalFat: 27.73
+Carbohydrate: 122.86
+Sodium: 40399.0
+SaturatedFat: 7.761
+Cholesterol: 1144.0
+Sugar: 46.44
+Calcium: 725.0
+Iron: 9.620000000000001
+Potassium: 2239.0
+VitaminC: 16.400000000000002
+VitaminE: 3.37
+VitaminD: 0.0
+

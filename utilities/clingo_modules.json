@@ -1,0 +1,33 @@
+{
+    "program" : """
+                p(@id(10)).
+                q(@seq(1,2)).
+                """,
+
+    "allergen" : """
+% Constraints
+allergic.
+#program allergic(x).
+:-allergen(x).
+""",
+
+ingredient = """
+incorporate.
+#program incorporate(x, m, q).
+ingredient(x, m, q).
+allergen(x):-ingredient(x, m, q).
+"""
+
+diabetes = """
+:-dv_sugar(6).
+:-#sum(X : ingredient(N, M, Q, ....... X)), X=>6.
+"""
+
+lactose_intolerant = """
+:-allergen(\"milk\").
+"""
+
+nutritional_metrics = """
+calories
+,protein,TotalFat,Carbohydrate,Sodium,SaturatedFat,Cholesterol,Sugar,Calcium,Iron,Potassium,VitaminC,VitaminE,VitaminD
+"""}

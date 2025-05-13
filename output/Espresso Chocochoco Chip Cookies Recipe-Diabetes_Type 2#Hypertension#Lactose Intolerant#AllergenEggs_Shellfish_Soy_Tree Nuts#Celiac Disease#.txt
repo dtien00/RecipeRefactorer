@@ -1,0 +1,33 @@
+Espresso Chocochoco Chip Cookies Recipe Ingredients:
+-----------------------------
+all-purpose flour 1.75 cups
+cocoa powder 0.5 cup
+baking soda 1.0 teaspoon
+salt 1.0 teaspoon
+instant espresso 2.0 tablespoons
+(2 sticks) butter, softened 1.0 cup
+granulated sugar 0.75 cup
+packed brown sugar 0.75 cup
+vanilla extract 1.0 teaspoon
+large eggs 2.0 
+semi sweet chocolate chips 1.0 cup
+white chocolate chips 1.0 cup
+chopped nuts (optional 1.0 cup
+
+Nutritional Values:
+-----------------------------
+Calories: 4395.0
+Protein: 105.39999999999999
+TotalFat: 275.6
+Carbohydrate: 404.4100000000001
+Sodium: 41475.0
+SaturatedFat: 111.58400000000002
+Cholesterol: 1098.0
+Sugar: nan
+Calcium: 1080.0
+Iron: 27.380000000000003
+Potassium: 2238.0
+VitaminC: nan
+VitaminE: nan
+VitaminD: nan
+
