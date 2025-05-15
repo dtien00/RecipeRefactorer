@@ -3,9 +3,11 @@ Additional testing will need to be done for set up. Currently, set up dependenci
 
 `pip install -r requirements.txt`
 
-Kaggle API credentials will be required, which you can generate your own at: `https://github.com/Kaggle/kaggle-api/blob/main/docs/README.md`
-
-After downloading the datasets, move the two resulting datafiles `full_dataset.csv` and `USDA.csv` to a folder called 'data' within the root directory of this project.
+After downloading the datasets at:
+- `https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database`
+- `https://www.kaggle.com/datasets/saldenisov/recipenlg`
+Unzip `full_dataset.csv.zip` to a folder called 'data' within the root directory of this project.
+Move `USDA.csv` to the same folder called 'data' within the root directory of this project.
 
 Run the program with
 
