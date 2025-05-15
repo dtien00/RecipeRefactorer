@@ -16,7 +16,7 @@ from utilities.asp import clingoResolver as cR # Importing the asp module for An
 
 constraints_filepath = ".\config\constraints.json"
 
-def print_recipe(recipe: Recipe, constraints):
+def print_recipe(recipe: Recipe, constraints, fail_flag: bool = False) -> None:
     """
     Writes the given recipe content to a text file in the '../output/' directory.
 
@@ -40,7 +40,8 @@ def print_recipe(recipe: Recipe, constraints):
             constraint_str += f"{constraint}_"+constraints[constraint]+"#"
         else:
             constraint_str += f"{constraint}"+"_".join(constraints[constraint])+"#"
-    filename=f"{recipe.dish}-{constraint_str}.txt"
+    failed_recipe = "_failed" if fail_flag else ""
+    filename=f"{recipe.dish}-{constraint_str}{failed_recipe}.txt"
     output_file_path = os.path.join(output_dir, filename)
     
     # Write the recipe content to the file
@@ -74,6 +75,7 @@ def parse_quantity(s: str) -> Union[float,None]:
     except ValueError:
         return None  # Graceful fallback
 
+### MAIN FUNCTION ###
 if __name__ == '__main__':
 
     # Download data set with kaggle.json credentials if not already downloaded
@@ -81,14 +83,14 @@ if __name__ == '__main__':
     # kaggle_dir = os.path.expanduser('~/.kaggle')
     # os.makedirs(kaggle_dir, exist_ok=True)
 
-    kaggle_cred_path = os.path.join("credentials", "kaggle_user.json")
-    with open(kaggle_cred_path, 'r') as f:
-        kaggle_cred = json.load(f)
+    # kaggle_cred_path = os.path.join("credentials", "kaggle_user.json")
+    # with open(kaggle_cred_path, 'r') as f:
+    #     kaggle_cred = json.load(f)
 
-    # od.download("https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database")
-    # od.download("https://www.kaggle.com/datasets/uciml/recipe-ingredients-dataset")
-    # exit(0)
-
+    if not os.path.isfile(r"data\full_dataset.csv"):
+        od.download("https://www.kaggle.com/datasets/uciml/recipe-ingredients-dataset")
+    if not os.path.isfile(r"data\USDA.csv"):
+        od.download("https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database")
 
     try:
         # Handle recipe input #
@@ -132,14 +134,12 @@ if __name__ == '__main__':
             with result as r:
                 for each ingredient, quantity in r: OriginalRecipe.add(ingredient, quantity)
         """
-        # print("Making Recipes of: ", exact_match_query, type(exact_match_query))
-
         recipes = exact_match_query['ingredients'] # Ingredients can be of multiple variations; collection of ingredients for one recipe. Check if there is only one recipe, or multiples
 
-        print("Ingredients: ", recipes.to_list())
+        # print("Ingredients: ", recipes.to_list())
         
         ingredient_lists = exact_match_query['NER'] # Just the lists of the actual ingredients; no metrics provided for measurement
-        print("NER: ", ingredient_lists.to_list())
+        # print("NER: ", ingredient_lists.to_list())
         
         combined = recipes.combine(ingredient_lists, lambda x, y: [x, y])
         
@@ -181,59 +181,141 @@ if __name__ == '__main__':
             recipe_book.append(recipe_sheet)
             # print(recipe_book)
 
-        # print("RECIPES: VVVV")
+        # print("RECIPES...")
         # for recipe in recipe_book:
         #     print(str(recipe))
         #     print("------------")
             
         ### Compile the nutritional data for each dish based on the provided usda food nutritional data ###
         for recipe in recipe_book:
-            print("-------------d")
+            print("-------------")
+            nutrition = cR() ### Create a clingo.Control() object to help scale nutritional values based on quantity and metric to 100 gram standard
             for ingredient_info in recipe.list:
                 ### Preprocessing of string representation of the ingredient to make it more compatible with USDA dataset
                 ingredient_name = ingredient_info[0].lower().replace(" ", ",")
                 ingredient_descriptions = ingredient_name.split(",")
-                
+
                 ### Find close matches with ingredient, the choose the one with the highest matching factor with rapidfuzz ###
                 ingredient_names = nutrition_data['Description'].str.lower().str.strip().tolist()
 
-                ### "egg" vs "parmesan,cheese"
+                ### "egg" vs "egg,scrambled, cooked" vs "egg, boiled" ###
                 ingredients_ = []
-                if len(ingredient_descriptions) == 1:
-                    print(ingredient_name)
+                if len(ingredient_descriptions) == 1: # If the ingredient is a single word
+                    # print(ingredient_name)
                     best_ingredient_matches = rapidfuzz.process.extract(ingredient_name, ingredient_names, scorer=rapidfuzz.fuzz.partial_ratio, limit = 50)
                     for match in best_ingredient_matches:
                         descriptions = match[0].split(",")
                         if ingredient_name in descriptions:
                             ingredients_.append(match)
                     best_ingredient_matches = ingredients_
-                else:
+                else: # If the ingredient is a multi-word description
                     ingredient_descriptions.reverse()
                     ingredient_name=",".join(ingredient_descriptions)
-                    print(ingredient_name)
+                    # print(ingredient_name)
                     best_ingredient_matches = rapidfuzz.process.extract(ingredient_name, ingredient_names, scorer=rapidfuzz.fuzz.WRatio, limit = 50)
                     for match in best_ingredient_matches:
                         descriptions = match[0].split(",")
                         for desc in ingredient_descriptions:
                             if desc in descriptions:
                                 ingredients_.append(match)
-                if len(ingredients_):
+                if len(ingredients_): # Check if there are any matches
                     best_ingredient_matches = ingredients_
 
                 ## best_match is a tuple: (matched string, score, index)
-                # matched_description, score, index = best_match
-                # matched_row = df.iloc[index]
-                # print("Ingredient match : ", best_ingredient_matches, "->", best_ingredient_matches[0][0])
+                # We take the first (best) match
                 ### Add nutritional data to the recipe
                 nutrition_entry = nutrition_data[nutrition_data['Description'].str.lower() == best_ingredient_matches[0][0].lower()]
-                # print(nutrition_entry)
-                # print(nutrition_entry.columns.tolist()[2:])
-                for field in nutrition_entry.columns.tolist()[2:]: # Remove the first two columns (ID, Description)
-                    recipe.incorporate(field, nutrition_entry[field].values[0])
+                # print("INGREDIENT ENTRY: ", nutrition_entry)
+                ingredient_descriptor = best_ingredient_matches[0][0].lower()
+                if '"' in nutrition_entry['Description'].str.lower(): ingredient_descriptor.replace('"', "'")
+                # print("Ingredient name: ", ingredient_descriptor) 
+                # print("NUTRITION INFO: ", nutrition_entry.columns.tolist()[2:])
+                ## Create clingo control object to help scale nutritional values based on quantity and metric to 100 gram standard
+                nutrition_values = nutrition_entry.iloc[0, 2:].values.tolist()
+                nutrition_values = [int(x * 1000) for x in nutrition_values]
+                # print("NUTRITION VALUES: ", nutrition_values)
 
-        ## Validate nutritional information ###
-        # for recipe in recipe_book:
-        #     print(recipe.nutritional_values)
+                ## Create metric for conversion predicate
+                ingredient_quantity = ingredient_info[1]
+                ingredient_metric = ingredient_info[2]
+
+                # print("FOROROROR: ", ingredient_descriptor, ingredient_quantity, ingredient_metric, '\n')
+
+                if (ingredient_metric in ["g", "g.", "grams"]): ingredient_metric = "grams"
+                elif (ingredient_metric in ["c", "c.", "cups"]): ingredient_metric = "cup"
+                elif (ingredient_metric in ["tbsp", "tbsp.", "tablespoons"]): ingredient_metric = "tablespoon"
+                elif (ingredient_metric in ["tsp", "tsp.", "teaspoons"]): ingredient_metric = "teaspoon"
+                elif (ingredient_metric in ["oz", "oz.", "ounces"]): ingredient_metric = "ounce"
+                elif (ingredient_metric in ["lb", "lbs", "pounds"]): ingredient_metric = "pound"
+                elif (ingredient_metric in ["kg", "kg.", "kilograms"]): ingredient_metric = "kilogram"
+                elif (ingredient_metric in ["fl. oz.", "fluid ounces"]): ingredient_metric = "fluid_ounce"
+                elif (ingredient_metric in ["pt", "pt.", "pints"]): ingredient_metric = "pint"
+                elif (ingredient_metric in ["qt", "qt.", "quarts"]): ingredient_metric = "quart"
+                elif (ingredient_metric in ["gal", "gal.", "gallons"]): ingredient_metric = "gallon"
+                elif (not ingredient_metric): ingredient_metric = None
+
+                nutrition.add_ingredient_3(ingredient_descriptor, int(ingredient_quantity), ingredient_metric)
+                nutrition.add_ingredient_15(ingredient_descriptor, nutrition_values)
+
+            # After all ingredients have been added, we can look to resolve to get aggregate data
+            # print("Resolving... ", nutrition)
+            nutrition.ctl.ground() # Ground the program
+            results, flag = nutrition.resolve()
+            # print("RESULTS & FLAG ", results, flag)
+            # print(nutrition.models)
+
+            if flag:
+                sat_terms = nutrition.models
+                print("SAT RESULTS: ", nutrition.models)
+                print(type(nutrition.models))
+                for term in sat_terms: # Incorporate into recipe nutritional values
+                    if term.name == "ingredient":
+                        print(term.arguments)
+                    elif term.name == "total_ingredient":
+                        print(term.arguments[0])
+                    elif term.name == "allergen":
+                        print(term.arguments[0])
+                    elif term.name == "total_calories":
+                        recipe.nutritional_values['Calories'] = term.arguments[0]
+                    elif term.name == "total_protein":
+                        recipe.nutritional_values['Protein'] = term.arguments[0]
+                    elif term.name == "total_fat":
+                        recipe.nutritional_values['TotalFat'] = term.arguments[0]
+                    elif term.name == "total_carbs":
+                        recipe.nutritional_values['Carbohydrate'] = term.arguments[0]
+                    elif term.name == "total_sodium":
+                        recipe.nutritional_values['Sodium']= term.arguments[0]
+                    elif term.name == "total_satfat":
+                        recipe.nutritional_values['SaturatedFat'] = term.arguments[0]
+                    elif term.name == "total_chol":
+                        recipe.nutritional_values['Cholesterol'] = term.arguments[0]
+                    elif term.name == "total_sugar":
+                        recipe.nutritional_values['Sugar'] = term.arguments[0]
+                    elif term.name == "total_calcium":
+                        recipe.nutritional_values['Calcium'] = term.arguments[0]
+                    elif term.name == "total_iron":
+                        recipe.nutritional_values['Iron'] = term.arguments[0]
+                    elif term.name == "total_potassium":
+                        recipe.nutritional_values['Potassium'] = term.arguments[0]
+                    elif term.name == "total_vitamin_c":
+                        recipe.nutritional_values['VitaminC'] = term.arguments[0]
+                    elif term.name == "total_vitamin_e":
+                        recipe.nutritional_values['VitaminE'] = term.arguments[0]
+                    elif term.name == "total_vitamin_d":
+                        recipe.nutritional_values['VitaminD'] = term.arguments[0]
+                    elif term.name == "total_protein_pct":
+                        print("Total protein %", term.arguments[0])
+                    elif term.name == "total_fat_pct":
+                        print("Total fat %", term.arguments[0])
+                    elif term.name == "total_carb_pct":
+                        print("Total carb %", term.arguments[0])
+                    elif term.name == "total_satfat_pct":
+                        print("Total satfat %", term.arguments[0])
+                    elif term.name == "total_sugar_pct":
+                        print("Total sugar %", term.arguments[0])
+            else:
+                print("UNSAT RESULTS: ", results, nutrition.models.symbols(terms=True))
+
 
         ### Handle constraints input ###
         with open(constraints_filepath, 'r') as file:
@@ -241,7 +323,10 @@ if __name__ == '__main__':
             # print(constraint_data["constraints"])
         constraint_choices = [x["name"] for x in constraint_data["constraints"]]
         constraints = easygui.multchoicebox("Enter constraints", "Recipe Refactoring", constraint_choices)
-        if constraints == None: raise TerminationError
+        if constraints == None:
+            print("No constraints detected. Just looking for the recipe? Here it is : ", recipe_book[0])
+            print_recipe(recipe_book[0], [])
+            raise TerminationError
 
         # print(constraints)
         
@@ -255,7 +340,6 @@ if __name__ == '__main__':
                     variants = easygui.multchoicebox(f"Enter {constraint} variant", "Recipe Refactoring", variant_choices)
                 else:
                     variants = easygui.choicebox(f"Enter {constraint} variant", "Recipe Refactoring", variant_choices)
-                
                 if variants == None: raise TerminationError
             else:
                 variants = []
@@ -263,49 +347,7 @@ if __name__ == '__main__':
 
         print("SPECIFIED CONSTRAINTS: ", specified_constraints)
 
-        """
-            # Clause where the user does not provide any constraints: they just want the recipe
-            if not len(constraints): 
-                system.out.println("No constraints were detected. Just looking for the recipe? Here it is: ", recipe_result)
-                raise TerminationError
-        """
-        if not len(constraints):
-            print("No constraints detected. Just looking for the recipe? Here it is : ", recipe_book[0])
-            raise TerminationError
-
         ### Begin Applying Constraints, checking against OriginalRecipe ###
-        """
-            conflicting_conditions = {}
-            for constraint in constraints:
-                type_flag = 1 if consumableType(constraint) else 0
-                conflicting_ingredients = OriginalRecipe.check_against(constraint, type_flag) # type_flag = {0,1}, if it is a nutritional metric constraint, or food type constraint respectively
-                if conflicting_ingredients: conflicting_conditions.add(conflicting_ingredients)
-
-            if not len(conflicting_conditions): 
-                system.out.println("Congratulations!!! No constraints have been violated in the dish. Enjoy this recommended recipe: ")
-                raise TerminationError
-
-            system.out.println("It appears that the following constraints were violated as part of the recipe: ", conflicting_conditions, " let's refactor this!")
-        """
-        # test_constraint = {
-        #     'Allergen' : tc.test_allergens,
-        #     'Celiac Disease' : tc.test_gluten,
-        #     'Diabetes' : tc.test_diabetes,
-        #     'Hypertension' : tc.test_hypertension,
-        #     'Lactose Intolerant': tc.test_lactase,
-        #     'Obesity' : tc.test_obesity,
-        # }
-        # safe_recipes : list[Recipe] = []
-        # for recipe in recipe_book:
-        #     for constraint, variants in specified_constraints.items():
-        #         print(constraint, variants)
-        #         if constraint in ['Allergen', 'Diabetes']:
-        #             flag = test_constraint[constraint](recipe, variants)
-        #         else:
-        #             flag = test_constraint[constraint](recipe)
-        #         print("Constraint? ", flag)
-        #         if flag: safe_recipes.append(recipe)
-
         safe_recipes : list[Recipe] = []
         for recipe in recipe_book:
             # compatibility = cR()
@@ -315,86 +357,30 @@ if __name__ == '__main__':
             for constraint, variants in specified_constraints.items():
                 print(constraint, variants)
                 flag = 0
-                if constraint in ['Allergen']:
+                if constraint in ['Allergen', 'Diabetes']:
                     flag += tc.test_allergens(recipe, variants)
                 else:
                     #flag = test_constraint[constraint](recipe)
                     flag += 0
                 print("Constraint? ", flag)
-            if flag: safe_recipes.append(recipe)
+            if flag==0: safe_recipes.append(recipe)
 
-        if not len(safe_recipes): print("Oh no, no compatible recipes were found :(. Let's try and make one!")
-
+        if not len(safe_recipes): 
+            print("Oh no, no compatible recipes were found :(! Please try again.")
+            print("Printing violating recipe...")
+            print_recipe(recipe_book[0], specified_constraints, fail_flag=True)
+            raise TerminationError
 
         ### Create secondary object serving as the proposed Alternative Recipe ###
-        altRecipe = Recipe(dish = dish)
-        
+        # altRecipe = Recipe(dish = dish)
 
         ### Logic to find suitable substitutes for the recipe against the constraints provided ###
         """
-            MAJORITY OF COMPLEXITY OF THE CODE. MUST BE EXAMINED LATER IN THE WEEK TO DETERMINE FEASABILITY
+            MUST BE EXAMINED LATER. ABANDONED FOR NOW
         """
 
-        ### Check nutritional metric constraints against all possible alternate Recipes and Dishes created ###
-        """
-            viableRecipes = {}
-            for altRecipe in altRecipes:
-                if altRecipe.checks_against(constraints): viableRecipes.add(altRecipe)
-        """
-
-        ### Output recipes to user ###
-        """
-            if not len(viableRecipes):
-                System.out.println(f"Unfortunately, it looks like no viable alternative recipes for {recipe_name} can be produced that satisfies the constraints provided earlier. Bye bye dish :(")
-                raise TerminationError
-            else
-                System.out.println(f"Congratulations!!! We were able to find {len(viableRecipes)} alternative recipes for {recipe_name} that satisfied the constraints you provided earlier. In no particualr order, the first one is: ")
-                candidate = recipes.pop()
-                System.out.println(candidate)
-                acception = user.input("Are you happy with this?") # acception = {0,1}, meaning rejected or accepted respectively
-                if acception:
-                    recipe.printToFile(candidate, ".\saved_recipes\<dish>\parse(constraints).txt")
-        """
-
-        ### Handle manual rejection by user until acceptance: We can roll this into the section above ^^^ ###
-        """
-            candidate = recipes.pop()
-            System.out.println("How is this recipe? ", candidate)
-            acception = 0
-            while not acception:
-                acception = user.input("Are you happy with this?") # acception = {0,1}, meaning rejected or accepted respectively
-                if acception:
-                    recipe.printToFile(candidate, ".\saved_recipes\<dish>\parse(constraints).txt")
-        """
-
-        ### Allow additional constraints to be retroactively added ###
-        """
-            additional_constraints = user.input()
-        """
-
-        ### Continue until either recipes run out, or the user finds an acceptable on. We could also roll this into the above section too ^^^ ###
-        """
-            while not accepted:
-                candidate = recipes.pop()
-                accepted = user.input("Are you happy with this?")
-                if accepted:
-                    System.out.println(f"Congratulations!!! We were able to find {len(viableRecipes)} alternative recipes for {recipe_name} that satisfied the constraints you provided earlier. In no particualr order, the first one is: ")
-                    candidate = recipes.pop()
-                    System.out.println(candidate)
-                if not len(recipes):
-                    system.out.println("It appears we've sadly exhausted every possible substitution for the dish of {recipe_name}. :()")
-                    raise TerminationError
-        """
-
-        ### Outputting the accepted recipe as output/answer/presentation ###
-        """
-            system.out.println(candidate)
-            system.out.println(candidate.recipe)
-            system.out.println(candidate.nutritional_information)
-
-            system.compareRecipes(candidate, originalRecipe)
-        """
-        print("PRINTING RECIPE")
+        ### Output recipe to user ###
+        print("Printing Recipe...")
         print_recipe(safe_recipes[0], specified_constraints)
 
 
@@ -404,19 +390,4 @@ if __name__ == '__main__':
     except Exception as e:
         print(e)
 
-    ### LOGIC PROGRAMMING IMPLEMENTATION ###
-            
-    # Construct query based on recipe and constraint input to the programming language #
-    # print("result: ", recipe, specified_constraints)
-    #query = Query(recipe, specified_constraints)
-
-    example = cR()
-    example.add_ingredient(("milk", "cup", 1))
-    example.add_allergen("milk")
-    print("Resolving... ", example)
-    results, flag = example.resolve()
-
-    if flag:
-        print("SAT RESULTS: ", results, example.models[0].symbols(terms=True))
-    else:
-        print("UNSAT RESULTS: ", results, example.models.symbols(terms=True))
+    print("Exiting...")

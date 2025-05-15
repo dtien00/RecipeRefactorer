@@ -24,7 +24,6 @@ class Recipe:
         """
         self.dish : str = dish
         self.list : list[tuple[str, float, str]] = []
-        self.detailed_ingredients = []
         self.nutritional_values : dict[str, float] = {
             'Calories': 0.0,
             'Protein': 0.0,

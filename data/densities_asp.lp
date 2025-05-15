@@ -1,3 +1,11 @@
+density("flour", 530).
+density("sugar", 850).
+density("butter", 960).
+density("milk", 1030).
+density("water", 1000).
+density("oil", 920).
+density("rice", 780).
+density("salt", 1200).
 density("butter,with salt", 911).
 density("butter,whipped,with salt", 911).
 density("butter oil,anhydrous", 911).
@@ -62,7 +70,7 @@ density("cream sub,liq,w/lauric acid oil&na caseinate", 994).
 density("cream substitute,powdered", 994).
 density("dessert topping,pdr,1500 oz prep w/1/2 cup milk", 1030).
 density("milk substitutes,fluid,w/lauric acid oil", 1030).
-density("milk,whl,3250% milkfat,w/ added vitamin d", 1030).
+density("milk,whl,3.25% milkfat,w/ added vitamin d", 1030).
 density("milk,producer,fluid,3700% milkfat", 1030).
 density("milk,red fat,fluid,2% milkfat,w/ added vit a & vitamin d", 1030).
 density("milk,red fat,fluid,2% milkfat,w/ added nfms, vit a & vit d", 1030).
@@ -163,7 +171,7 @@ density("cream sub,flav,pdr", 994).
 density("cheese,provolone,red fat", 1100).
 density("cheese,mexican,blend,red fat", 1100).
 density("egg mix,usda cmdty", 1030).
-density("milk,whl,3250% milkfat,wo/ added vit a & vitamin d", 1030).
+density("milk,whl,3.25% milkfat,wo/ added vit a & vitamin d", 1030).
 density("milk,dry,whl,wo/ added vitamin d", 1030).
 density("milk,cnd,evap,wo/ added vit a & vitamin d", 1030).
 density("cheese product,past process,american,red fat,fort w/ vit d", 1100).
@@ -4528,6 +4536,7 @@ density("ice crm cones,sugar,rolled-type", 845).
 density("pancakes pln,frz,rth (includes buttermilk)", 911).
 density("rolls,dinner,egg", 1030).
 density("sweet rolls,cheese", 1100).
+density("cinnamon,ground", 550).
 density("toaster pastries,brown-sugar-cinnamon", 845).
 density("toaster pastries,fruit", 950).
 density("wonton wrappers (incl egg roll wrappers)", 1030).
@@ -4573,6 +4582,7 @@ density("mckee baking,littl debbi nut bar,wafer w/pnut bute,choc cove", 650).
 density("kraft foods,shake 'n' bake orig recipe,coating for pork,dry", 1030).
 density("toaster pastries,fruit,frstd", 950).
 density("bread,salvadoran swt chs (quesadilla salvadorena)", 270).
+density("shake,fast food,chocolate", 700).
 density("bread,pound cake type,pan de torta salvadoran", 270).
 density("bread,pan dulce,swt yeast bread", 270).
 density("garlic bread,frz", 270).
@@ -5033,6 +5043,7 @@ density("beef,rib,back ribs,bone-in,ln,0' fat,choic,ckd,brsd", 1030).
 density("beef,rib,back ribs,bone-in,ln,0' fat,choic,raw", 1030).
 density("beef,rib,back ribs,bone-in,ln,0' fat,sel,ckd,brsd", 1030).
 density("beef,rib,back ribs,bone-in,ln,0' fat,sel,raw", 1030).
+density("pepper,black", 1000).
 density("beef,rib eye stk,bne-in,lip-on,ln & ft,1/8' fat,choc,ckd,grl", 1030).
 density("beef,rib eye stk,bne-in,lip-on,ln & ft,1/8' fat,sel,ckd,grld", 1030).
 density("beef,rib eye stk,bn-in,lip-on,ln & ft,1/8' ft,al gds,ckd,grl", 1030).
