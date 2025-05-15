@@ -122,7 +122,6 @@ class clingoResolver:
     
     def add_ingredient_3(self, ingredient_name, ingredient_quantity, ingredient_metric):
         # Add the unit to the ASP program
-        print("INGREDIENT_3: ", ingredient_name, ingredient_quantity, ingredient_metric)
         if ingredient_metric == None: ingredient_metric = "gram"
         clingo_predicate = (f"ingredient(\"{ingredient_name}\", {ingredient_metric}, {ingredient_quantity}).")
         print(clingo_predicate)

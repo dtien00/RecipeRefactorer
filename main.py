@@ -92,17 +92,17 @@ if __name__ == '__main__':
     if not os.path.isfile(r"data\USDA.csv"):
         od.download("https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database")
 
+    # Transform .csv file into a pandas DF for ease of tabulation
+    recipe_data = pd.read_csv(r"data\full_dataset.csv")
+    recipe_names = recipe_data['title'].tolist()
+    
+    nutrition_data = pd.read_csv(r"data\USDA.csv")
+
     try:
         # Handle recipe input #
         recipe = easygui.enterbox("Enter your recipe: ", "Recipe Refactoring")
         # print(f"Recipe: {recipe}")
         if not len(recipe) or recipe==None: raise TerminationError
-
-        # Transform .csv file into a pandas DF for ease of tabulation
-        recipe_data = pd.read_csv(r"data\full_dataset.csv")
-        recipe_names = recipe_data['title'].tolist()
-        
-        nutrition_data = pd.read_csv(r"data\USDA.csv")
         
         ### Query Recipe Database for a possible matching recipe ###
         """
@@ -135,7 +135,6 @@ if __name__ == '__main__':
                 for each ingredient, quantity in r: OriginalRecipe.add(ingredient, quantity)
         """
         recipes = exact_match_query['ingredients'] # Ingredients can be of multiple variations; collection of ingredients for one recipe. Check if there is only one recipe, or multiples
-
         # print("Ingredients: ", recipes.to_list())
         
         ingredient_lists = exact_match_query['NER'] # Just the lists of the actual ingredients; no metrics provided for measurement
@@ -357,12 +356,15 @@ if __name__ == '__main__':
             for constraint, variants in specified_constraints.items():
                 print(constraint, variants)
                 flag = 0
-                if constraint in ['Allergen', 'Diabetes']:
+                if constraint in ['Allergen']:
                     flag += tc.test_allergens(recipe, variants)
-                else:
-                    #flag = test_constraint[constraint](recipe)
-                    flag += 0
-                print("Constraint? ", flag)
+                elif constraint in ['Diabetes']:
+                    flag += tc.test_diabetes(recipe, variants)
+                elif constraint in ['Hypertension']:
+                    flag += tc.test_hypertension(recipe)
+                elif constraint in ['Obesity']:
+                    flag += tc.test_obesity(recipe)
+                # print("Constraint? ", flag)
             if flag==0: safe_recipes.append(recipe)
 
         if not len(safe_recipes): 
