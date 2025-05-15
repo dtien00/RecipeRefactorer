@@ -15,7 +15,7 @@ def test_allergens(recipe : Recipe, allergens : list[str]):
                         if allergen.lower() in ingredient.lower(): return 1 # Upon detection of allergen in the recipe, return fail (0)
         return 0
 
-def test_diabetes(recipe : Recipe, type : int):
+def test_diabetes(recipe : Recipe, type, diabetic : cR):
         """ Test for diabetes in the recipe. Returns 1 if no diabetes is detected, 0 if diabetes is detected.
             @args:
                 recipe : Recipe object to be tested
@@ -23,7 +23,6 @@ def test_diabetes(recipe : Recipe, type : int):
             @return:
                 0 if no high sugar levels are detected, else 1 if diabetes is detected.
         """
-        diabetic = cR()
         for nv in recipe.nutritional_values:
                 value = int(recipe.nutritional_values[nv])
                 if nv == "Sugar": diabetic.add_pct_1("sugar", value)
@@ -33,7 +32,7 @@ def test_diabetes(recipe : Recipe, type : int):
                 elif nv == "Carbohydrate": diabetic.add_pct_1("carb", value)
         clingo_predicate = (f""":-total_carb_pct(P), P > 50."""
                             f""":-total_protein_pct(P), P > 20."""
-                            f""":-total_fat_pct(P), P > 35.""") if type == 1 else (
+                            f""":-total_fat_pct(P), P > 35.""") if int(type[-1]) == 1 else (
                                 f""":-total_carb_pct(P), P > 50."""
                                 f""":-total_protein_pct(P), P > 25."""
                                 f""":-total_fat_pct(P), P > 35.""")
@@ -45,9 +44,13 @@ def test_diabetes(recipe : Recipe, type : int):
         if not flag: return 1 # On SAT, approve this. On UNSAT, reject this
         return 0
 
-def test_hypertension(recipe: Recipe):
-        # print("Test C")
-        hypertension = cR()
+def test_hypertension(recipe: Recipe, hypertension: cR):
+        """ Test for hypertension in the recipe. Returns 1 if no hypertension is detected, 0 if hypertension is detected.
+            @args:
+                recipe : Recipe object to be tested
+            @return:
+                0 if no high sugar levels are detected, else 1 if diabetes is detected.
+        """
         for nv in recipe.nutritional_values:
                 value = int(recipe.nutritional_values[nv])
                 if nv == "Sugar": hypertension.add_pct_1("sugar", value)
@@ -66,9 +69,13 @@ def test_hypertension(recipe: Recipe):
         if not flag: return 1 # On SAT, approve this. On UNSAT, reject this
         return 0
 
-def test_obesity(recipe: Recipe):
-        # print("Test D")
-        obesity = cR()
+def test_obesity(recipe: Recipe, obesity: cR):
+        """ Test for obesity in the recipe. Returns 1 if no obesity is detected, 0 if obesity is detected.
+            @args:
+                recipe : Recipe object to be tested
+            @return:
+                0 if no high sugar levels are detected, else 1 if diabetes is detected.
+        """
         for nv in recipe.nutritional_values:
                 value = int(recipe.nutritional_values[nv])
                 if nv == "Sugar": obesity.add_pct_1("sugar", value)

@@ -275,33 +275,33 @@ if __name__ == '__main__':
                     elif term.name == "allergen":
                         print(term.arguments[0])
                     elif term.name == "total_calories":
-                        recipe.nutritional_values['Calories'] = term.arguments[0]
+                        recipe.nutritional_values['Calories'] = term.arguments[0].number
                     elif term.name == "total_protein":
-                        recipe.nutritional_values['Protein'] = term.arguments[0]
+                        recipe.nutritional_values['Protein'] = term.arguments[0].number
                     elif term.name == "total_fat":
-                        recipe.nutritional_values['TotalFat'] = term.arguments[0]
+                        recipe.nutritional_values['TotalFat'] = term.arguments[0].number
                     elif term.name == "total_carbs":
-                        recipe.nutritional_values['Carbohydrate'] = term.arguments[0]
+                        recipe.nutritional_values['Carbohydrate'] = term.arguments[0].number
                     elif term.name == "total_sodium":
-                        recipe.nutritional_values['Sodium']= term.arguments[0]
+                        recipe.nutritional_values['Sodium']= term.arguments[0].number
                     elif term.name == "total_satfat":
-                        recipe.nutritional_values['SaturatedFat'] = term.arguments[0]
+                        recipe.nutritional_values['SaturatedFat'] = term.arguments[0].number
                     elif term.name == "total_chol":
-                        recipe.nutritional_values['Cholesterol'] = term.arguments[0]
+                        recipe.nutritional_values['Cholesterol'] = term.arguments[0].number
                     elif term.name == "total_sugar":
-                        recipe.nutritional_values['Sugar'] = term.arguments[0]
+                        recipe.nutritional_values['Sugar'] = term.arguments[0].number
                     elif term.name == "total_calcium":
-                        recipe.nutritional_values['Calcium'] = term.arguments[0]
+                        recipe.nutritional_values['Calcium'] = term.arguments[0].number
                     elif term.name == "total_iron":
-                        recipe.nutritional_values['Iron'] = term.arguments[0]
+                        recipe.nutritional_values['Iron'] = term.arguments[0].number
                     elif term.name == "total_potassium":
-                        recipe.nutritional_values['Potassium'] = term.arguments[0]
+                        recipe.nutritional_values['Potassium'] = term.arguments[0].number
                     elif term.name == "total_vitamin_c":
-                        recipe.nutritional_values['VitaminC'] = term.arguments[0]
+                        recipe.nutritional_values['VitaminC'] = term.arguments[0].number
                     elif term.name == "total_vitamin_e":
-                        recipe.nutritional_values['VitaminE'] = term.arguments[0]
+                        recipe.nutritional_values['VitaminE'] = term.arguments[0].number
                     elif term.name == "total_vitamin_d":
-                        recipe.nutritional_values['VitaminD'] = term.arguments[0]
+                        recipe.nutritional_values['VitaminD'] = term.arguments[0].number
                     elif term.name == "total_protein_pct":
                         print("Total protein %", term.arguments[0])
                     elif term.name == "total_fat_pct":
@@ -352,18 +352,85 @@ if __name__ == '__main__':
             # compatibility = cR()
             # for ingredient in recipe.list:
             #     compatibility.add_ingredient((ingredient[0], ingredient[2], ingredient[1]))
+            nutrition = cR() ### Create a clingo.Control() object to help scale nutritional values based on quantity and metric to 100 gram standard
+            for ingredient_info in recipe.list:
+                ### Preprocessing of string representation of the ingredient to make it more compatible with USDA dataset
+                ingredient_name = ingredient_info[0].lower().replace(" ", ",")
+                ingredient_descriptions = ingredient_name.split(",")
 
+                ### Find close matches with ingredient, the choose the one with the highest matching factor with rapidfuzz ###
+                ingredient_names = nutrition_data['Description'].str.lower().str.strip().tolist()
+
+                ### "egg" vs "egg,scrambled, cooked" vs "egg, boiled" ###
+                ingredients_ = []
+                if len(ingredient_descriptions) == 1: # If the ingredient is a single word
+                    # print(ingredient_name)
+                    best_ingredient_matches = rapidfuzz.process.extract(ingredient_name, ingredient_names, scorer=rapidfuzz.fuzz.partial_ratio, limit = 50)
+                    for match in best_ingredient_matches:
+                        descriptions = match[0].split(",")
+                        if ingredient_name in descriptions:
+                            ingredients_.append(match)
+                    best_ingredient_matches = ingredients_
+                else: # If the ingredient is a multi-word description
+                    ingredient_descriptions.reverse()
+                    ingredient_name=",".join(ingredient_descriptions)
+                    # print(ingredient_name)
+                    best_ingredient_matches = rapidfuzz.process.extract(ingredient_name, ingredient_names, scorer=rapidfuzz.fuzz.WRatio, limit = 50)
+                    for match in best_ingredient_matches:
+                        descriptions = match[0].split(",")
+                        for desc in ingredient_descriptions:
+                            if desc in descriptions:
+                                ingredients_.append(match)
+                if len(ingredients_): # Check if there are any matches
+                    best_ingredient_matches = ingredients_
+
+                ## best_match is a tuple: (matched string, score, index)
+                # We take the first (best) match
+                ### Add nutritional data to the recipe
+                nutrition_entry = nutrition_data[nutrition_data['Description'].str.lower() == best_ingredient_matches[0][0].lower()]
+                # print("INGREDIENT ENTRY: ", nutrition_entry)
+                ingredient_descriptor = best_ingredient_matches[0][0].lower()
+                if '"' in nutrition_entry['Description'].str.lower(): ingredient_descriptor.replace('"', "'")
+                # print("Ingredient name: ", ingredient_descriptor) 
+                # print("NUTRITION INFO: ", nutrition_entry.columns.tolist()[2:])
+                ## Create clingo control object to help scale nutritional values based on quantity and metric to 100 gram standard
+                nutrition_values = nutrition_entry.iloc[0, 2:].values.tolist()
+                nutrition_values = [int(x * 1000) for x in nutrition_values]
+                # print("NUTRITION VALUES: ", nutrition_values)
+
+                ## Create metric for conversion predicate
+                ingredient_quantity = ingredient_info[1]
+                ingredient_metric = ingredient_info[2]
+
+                # print("FOROROROR: ", ingredient_descriptor, ingredient_quantity, ingredient_metric, '\n')
+
+                if (ingredient_metric in ["g", "g.", "grams"]): ingredient_metric = "grams"
+                elif (ingredient_metric in ["c", "c.", "cups"]): ingredient_metric = "cup"
+                elif (ingredient_metric in ["tbsp", "tbsp.", "tablespoons"]): ingredient_metric = "tablespoon"
+                elif (ingredient_metric in ["tsp", "tsp.", "teaspoons"]): ingredient_metric = "teaspoon"
+                elif (ingredient_metric in ["oz", "oz.", "ounces"]): ingredient_metric = "ounce"
+                elif (ingredient_metric in ["lb", "lbs", "pounds"]): ingredient_metric = "pound"
+                elif (ingredient_metric in ["kg", "kg.", "kilograms"]): ingredient_metric = "kilogram"
+                elif (ingredient_metric in ["fl. oz.", "fluid ounces"]): ingredient_metric = "fluid_ounce"
+                elif (ingredient_metric in ["pt", "pt.", "pints"]): ingredient_metric = "pint"
+                elif (ingredient_metric in ["qt", "qt.", "quarts"]): ingredient_metric = "quart"
+                elif (ingredient_metric in ["gal", "gal.", "gallons"]): ingredient_metric = "gallon"
+                elif (not ingredient_metric): ingredient_metric = None
+
+                nutrition.add_ingredient_3(ingredient_descriptor, int(ingredient_quantity), ingredient_metric)
+                nutrition.add_ingredient_15(ingredient_descriptor, nutrition_values)
+            
             for constraint, variants in specified_constraints.items():
                 print(constraint, variants)
                 flag = 0
                 if constraint in ['Allergen']:
                     flag += tc.test_allergens(recipe, variants)
                 elif constraint in ['Diabetes']:
-                    flag += tc.test_diabetes(recipe, variants)
+                    flag += tc.test_diabetes(recipe, variants, nutrition)
                 elif constraint in ['Hypertension']:
-                    flag += tc.test_hypertension(recipe)
+                    flag += tc.test_hypertension(recipe, nutrition)
                 elif constraint in ['Obesity']:
-                    flag += tc.test_obesity(recipe)
+                    flag += tc.test_obesity(recipe, nutrition)
                 # print("Constraint? ", flag)
             if flag==0: safe_recipes.append(recipe)
 
@@ -372,14 +439,6 @@ if __name__ == '__main__':
             print("Printing violating recipe...")
             print_recipe(recipe_book[0], specified_constraints, fail_flag=True)
             raise TerminationError
-
-        ### Create secondary object serving as the proposed Alternative Recipe ###
-        # altRecipe = Recipe(dish = dish)
-
-        ### Logic to find suitable substitutes for the recipe against the constraints provided ###
-        """
-            MUST BE EXAMINED LATER. ABANDONED FOR NOW
-        """
 
         ### Output recipe to user ###
         print("Printing Recipe...")
