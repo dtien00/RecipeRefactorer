@@ -6,6 +6,7 @@ Additional testing will need to be done for set up. Currently, set up dependenci
 After downloading the datasets at:
 - `https://www.kaggle.com/datasets/demomaster/usda-national-nutrient-database`
 - `https://www.kaggle.com/datasets/saldenisov/recipenlg`
+
 Unzip `full_dataset.csv.zip` to a folder called 'data' within the root directory of this project.
 Move `USDA.csv` to the same folder called 'data' within the root directory of this project.
 
